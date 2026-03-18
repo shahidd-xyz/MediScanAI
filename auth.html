@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan AI — Login & Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ─── ROOT ─── */
+:root {
+  --bg:       #050d14;
+  --surface:  #0a1724;
+  --surface2: #0f2030;
+  --accent:   #00c8a0;
+  --accent2:  #0090ff;
+  --accent3:  #ff6b6b;
+  --text:     #e8f4f0;
+  --muted:    #6a8fa0;
+  --border:   rgba(0,200,160,0.14);
+  --border2:  rgba(255,255,255,0.06);
+  --err:      #ff6b6b;
+  --success:  #00c8a0;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+
+body {
+  font-family:'DM Sans',sans-serif;
+  font-weight:300;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+}
+
+/* NOISE */
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.35;
+}
+
+/* ─── NAV ─── */
+nav {
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(5,13,20,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo {
+  font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;
+  letter-spacing:-0.02em;display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--text);
+}
+.logo-dot {
+  width:9px;height:9px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+.nav-back {
+  color:var(--muted);font-size:.85rem;text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+  transition:color .2s;
+}
+.nav-back:hover{color:var(--accent)}
+
+/* ─── LAYOUT ─── */
+.page-wrap {
+  flex:1;display:flex;align-items:stretch;
+  padding-top:64px;
+  position:relative;z-index:1;
+}
+
+/* LEFT PANEL */
+.panel-left {
+  flex:0 0 42%;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;
+  padding:64px 56px;
+  position:relative;overflow:hidden;
+}
+
+.panel-left::before {
+  content:'';
+  position:absolute;
+  width:500px;height:500px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,200,160,0.09) 0%, transparent 70%);
+  bottom:-150px;left:-100px;
+  pointer-events:none;
+}
+.panel-left::after {
+  content:'';
+  position:absolute;
+  width:300px;height:300px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,144,255,0.07) 0%, transparent 70%);
+  top:-80px;right:-60px;
+  pointer-events:none;
+}
+
+/* GRID ON LEFT */
+.left-grid {
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,200,160,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,160,0.04) 1px,transparent 1px);
+  background-size:50px 50px;
+  mask-image:radial-gradient(ellipse 70% 80% at 50% 50%,black,transparent);
+  pointer-events:none;
+}
+
+.panel-left-content{position:relative;z-index:1;}
+
+.left-badge {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,200,160,0.08);
+  border:1px solid rgba(0,200,160,0.22);
+  border-radius:100px;
+  padding:5px 14px;
+  font-size:.72rem;letter-spacing:.08em;color:var(--accent);
+  margin-bottom:28px;
+}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 1.5s ease-in-out infinite}
+
+.left-title {
+  font-family:'Syne',sans-serif;
+  font-weight:800;font-size:clamp(2rem,3.2vw,2.8rem);
+  line-height:1.08;letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+.left-title em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.left-sub{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:36px;max-width:340px;}
+
+/* FEATURES LIST */
+.feat-list{display:flex;flex-direction:column;gap:14px;margin-bottom:40px;}
+.feat-item{
+  display:flex;align-items:center;gap:12px;
+  font-size:.85rem;color:var(--muted);
+}
+.feat-check{
+  width:22px;height:22px;border-radius:6px;
+  background:rgba(0,200,160,0.12);
+  border:1px solid rgba(0,200,160,0.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--accent);flex-shrink:0;
+}
+
+/* LANG PILLS */
+.left-langs{display:flex;flex-wrap:wrap;gap:7px;}
+.lpill{
+  padding:4px 12px;border-radius:100px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border2);
+  font-size:.72rem;color:var(--muted);
+}
+
+/* SECURITY BADGES */
+.security-row{
+  display:flex;gap:16px;margin-top:32px;flex-wrap:wrap;
+}
+.sec-badge{
+  display:flex;align-items:center;gap:6px;
+  font-size:.7rem;color:var(--muted);
+}
+.sec-icon{font-size:.85rem;}
+
+/* RIGHT PANEL */
+.panel-right {
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:48px 40px;
+  position:relative;overflow:hidden;
+}
+
+.panel-right::before {
+  content:'';
+  position:absolute;
+  width:400px;height:400px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(0,144,255,0.05) 0%,transparent 70%);
+  top:-80px;right:-80px;pointer-events:none;
+}
+
+/* AUTH CARD */
+.auth-card {
+  width:100%;max-width:440px;
+  position:relative;z-index:1;
+  animation:fadeUp .7s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* TABS */
+.auth-tabs {
+  display:flex;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:5px;
+  margin-bottom:28px;
+}
+.tab-btn {
+  flex:1;padding:11px;border:none;
+  background:transparent;color:var(--muted);
+  font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;
+  border-radius:10px;cursor:pointer;
+  transition:all .25s;
+}
+.tab-btn.active {
+  background:var(--surface2);
+  color:var(--text);
+  box-shadow:0 2px 12px rgba(0,0,0,0.3);
+}
+.tab-btn:hover:not(.active){color:var(--text);}
+
+/* FORM PANEL */
+.form-panel{display:none;animation:fadeUp .4s ease both}
+.form-panel.active{display:block}
+
+.form-heading{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:1.55rem;letter-spacing:-.02em;margin-bottom:6px;
+}
+.form-sub{color:var(--muted);font-size:.85rem;margin-bottom:28px;line-height:1.5;}
+
+/* FORM GROUPS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{margin-bottom:18px;position:relative;}
+.form-label{
+  display:block;font-size:.73rem;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:7px;text-transform:uppercase;
+  transition:color .2s;
+}
+.form-group:focus-within .form-label{color:var(--accent);}
+
+.input-wrap{position:relative;}
+.input-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:.95rem;color:var(--muted);pointer-events:none;
+  transition:color .2s;
+}
+.form-group:focus-within .input-icon{color:var(--accent);}
+
+.form-input {
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:12px 14px 12px 42px;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.9rem;
+  outline:none;
+  transition:all .25s;
+  appearance:none;
+}
+.form-input::placeholder{color:var(--muted);}
+.form-input:focus{
+  border-color:var(--accent);
+  background:rgba(0,200,160,0.04);
+  box-shadow:0 0 0 3px rgba(0,200,160,0.1);
+}
+.form-input.error{border-color:var(--err);box-shadow:0 0 0 3px rgba(255,107,107,0.1);}
+.form-input.success{border-color:var(--success);}
+
+/* PASSWORD TOGGLE */
+.pw-toggle {
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:var(--muted);font-size:1rem;
+  transition:color .2s;padding:4px;
+}
+.pw-toggle:hover{color:var(--accent);}
+
+/* SELECT */
+select.form-input{cursor:pointer;}
+
+/* PASSWORD STRENGTH */
+.pw-strength{margin-top:8px;}
+.strength-bars{display:flex;gap:4px;margin-bottom:5px;}
+.sb{flex:1;height:3px;border-radius:2px;background:var(--border2);transition:background .3s;}
+.strength-label{font-size:.68rem;color:var(--muted);}
+
+/* OTP INPUTS */
+.otp-group{display:flex;gap:10px;justify-content:space-between;margin-bottom:6px;}
+.otp-input {
+  flex:1;text-align:center;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:10px;
+  padding:14px 8px;
+  color:var(--text);font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;
+  outline:none;transition:all .25s;
+  -webkit-appearance:none;
+}
+.otp-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,200,160,0.12);background:rgba(0,200,160,0.04);}
+.otp-info{font-size:.75rem;color:var(--muted);text-align:center;}
+.otp-info span{color:var(--accent);cursor:pointer;} 
+.otp-info span:hover{text-decoration:underline;}
+
+/* TIMER */
+.otp-timer{
+  font-size:.75rem;color:var(--muted);text-align:center;margin-top:6px;
+}
+.otp-timer strong{color:var(--accent);}
+
+/* ERROR TEXT */
+.field-err{font-size:.72rem;color:var(--err);margin-top:5px;display:none;}
+.field-err.show{display:block;}
+
+/* DIVIDER */
+.divider{
+  display:flex;align-items:center;gap:12px;margin:20px 0;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+.divider span{font-size:.75rem;color:var(--muted);}
+
+/* SOCIAL BTNS */
+.social-btns{display:flex;gap:10px;margin-bottom:4px;}
+.social-btn {
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:10px;padding:11px;
+  color:var(--text);font-size:.82rem;font-weight:500;
+  cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .2s;text-decoration:none;
+}
+.social-btn:hover{border-color:var(--accent);color:var(--accent);}
+.social-icon{font-size:1rem;}
+
+/* SUBMIT BTN */
+.submit-btn {
+  width:100%;padding:14px;
+  background:var(--accent);
+  color:#050d14;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
+  border:none;border-radius:10px;cursor:pointer;
+  transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:4px;
+  position:relative;overflow:hidden;
+}
+.submit-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,transparent 0%,rgba(255,255,255,0.1) 50%,transparent 100%);
+  transform:translateX(-100%);transition:transform .5s ease;
+}
+.submit-btn:hover::before{transform:translateX(100%);}
+.submit-btn:hover{background:#00e8ba;box-shadow:0 0 24px rgba(0,200,160,0.4);transform:translateY(-1px);}
+.submit-btn:active{transform:translateY(0);}
+.submit-btn.loading{pointer-events:none;opacity:.8;}
+
+/* SPINNER */
+.spinner{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(5,13,20,0.3);
+  border-top-color:#050d14;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+.submit-btn.loading .spinner{display:block;}
+.submit-btn.loading .btn-text{display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CHECKBOX */
+.check-group{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px;}
+.custom-check{
+  width:18px;height:18px;border-radius:5px;flex-shrink:0;
+  background:var(--surface2);border:1px solid var(--border2);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--accent);transition:all .2s;margin-top:2px;
+}
+.custom-check.checked{background:rgba(0,200,160,0.15);border-color:var(--accent);}
+.check-label{font-size:.8rem;color:var(--muted);line-height:1.5;}
+.check-label a{color:var(--accent);text-decoration:none;}
+.check-label a:hover{text-decoration:underline;}
+
+/* FORGOT LINK */
+.form-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:18px;
+}
+.forgot-link{font-size:.78rem;color:var(--accent);text-decoration:none;}
+.forgot-link:hover{text-decoration:underline;}
+.remember-group{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);}
+
+/* STEP INDICATOR */
+.step-indicator{
+  display:flex;align-items:center;gap:0;margin-bottom:24px;
+}
+.step-dot{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;color:var(--muted);
+  transition:all .3s;font-family:'Syne',sans-serif;
+  position:relative;z-index:1;
+}
+.step-dot.active{background:var(--accent);border-color:var(--accent);color:#050d14;}
+.step-dot.done{background:rgba(0,200,160,0.15);border-color:var(--accent);color:var(--accent);}
+.step-line{flex:1;height:1px;background:var(--border2);transition:background .3s;}
+.step-line.done{background:var(--accent);}
+.step-labels{
+  display:flex;justify-content:space-between;
+  margin-bottom:20px;
+}
+.step-lbl{font-size:.65rem;letter-spacing:.06em;color:var(--muted);text-align:center;flex:1;}
+.step-lbl.active{color:var(--accent);}
+
+/* SUCCESS STATE */
+.success-screen{
+  text-align:center;padding:20px 0;
+  display:none;
+}
+.success-screen.show{display:block;animation:fadeUp .5s ease both}
+.success-icon{
+  width:72px;height:72px;border-radius:50%;
+  background:rgba(0,200,160,0.12);
+  border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;margin:0 auto 20px;
+  animation:popIn .5s cubic-bezier(.17,.67,.42,1.4) both;
+}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.success-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.4rem;margin-bottom:8px;}
+.success-sub{color:var(--muted);font-size:.85rem;line-height:1.6;margin-bottom:24px;}
+
+/* PROGRESS BAR */
+.reg-progress{
+  width:100%;height:3px;background:var(--border2);border-radius:2px;margin-bottom:28px;
+  overflow:hidden;
+}
+.reg-progress-fill{
+  height:100%;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .4s ease;
+}
+
+/* BACK BTN */
+.back-step-btn{
+  background:none;border:none;color:var(--muted);
+  font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;gap:6px;padding:0;
+  transition:color .2s;margin-bottom:20px;
+}
+.back-step-btn:hover{color:var(--accent);}
+
+/* SCROLL */
+@media(max-height:700px){
+  .panel-right{align-items:flex-start;padding-top:90px;}
+}
+@media(max-width:860px){
+  .panel-left{display:none;}
+  .panel-right{padding:80px 24px 40px;}
+}
+
+/* TOOLTIP */
+.tooltip{
+  position:relative;
+}
+.tooltip-text{
+  position:absolute;left:0;bottom:calc(100% + 8px);
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;font-size:.72rem;color:var(--text);
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;
+  z-index:10;
+}
+.tooltip:hover .tooltip-text{opacity:1;}
+
+/* FLOATING HEALTH CARDS on left */
+.float-cards{
+  margin-top:auto;
+  display:flex;flex-direction:column;gap:10px;
+  padding-top:32px;
+}
+.fc{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:12px;
+  font-size:.8rem;
+}
+.fc-icon{font-size:1.2rem;width:32px;text-align:center;flex-shrink:0;}
+.fc-text strong{display:block;font-weight:500;margin-bottom:2px;}
+.fc-text span{color:var(--muted);font-size:.72rem;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="logo">
+    <div class="logo-dot"></div>
+    MediScan<span style="color:var(--accent)">AI</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back to Home</a>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<div class="page-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="panel-left">
+    <div class="left-grid"></div>
+    <div class="panel-left-content">
+      <div class="left-badge">
+        <div class="badge-dot"></div>
+        Trusted Health Intelligence
+      </div>
+      <h2 class="left-title">
+        Your Health<br>Journey<br><em>Begins Here</em>
+      </h2>
+      <p class="left-sub">
+        Upload medical reports, track medicines, get AI-powered insights — all encrypted and secure. In your language.
+      </p>
+
+      <div class="feat-list">
+        <div class="feat-item"><div class="feat-check">✓</div>AI analysis of all your medical reports</div>
+        <div class="feat-item"><div class="feat-check">✓</div>Smart medicine reminders & tracking</div>
+        <div class="feat-item"><div class="feat-check">✓</div>Multilingual AI health chatbot</div>
+        <div class="feat-item"><div class="feat-check">✓</div>Community symptom heatmap</div>
+        <div class="feat-item"><div class="feat-check">✓</div>Government scheme notifications</div>
+        <div class="feat-item"><div class="feat-check">✓</div>AES-256 encrypted cloud storage</div>
+      </div>
+
+      <div class="left-langs">
+        <span class="lpill">🇬🇧 EN</span>
+        <span class="lpill">🇮🇳 हि</span>
+        <span class="lpill">🇷🇺 RU</span>
+        <span class="lpill">🇩🇪 DE</span>
+        <span class="lpill">🇫🇷 FR</span>
+        <span class="lpill">🇮🇳 বাং</span>
+        <span class="lpill">🇮🇳 தமி</span>
+        <span class="lpill">+43</span>
+      </div>
+
+      <div class="security-row">
+        <div class="sec-badge"><span class="sec-icon">🔒</span> AES-256 Encrypted</div>
+        <div class="sec-badge"><span class="sec-icon">🛡️</span> HIPAA Compliant</div>
+        <div class="sec-badge"><span class="sec-icon">✅</span> OTP Verified</div>
+      </div>
+
+      <div class="float-cards">
+        <div class="fc">
+          <div class="fc-icon">🧬</div>
+          <div class="fc-text">
+            <strong>AI Report Ready</strong>
+            <span>Your CBC report has been analysed</span>
+          </div>
+        </div>
+        <div class="fc">
+          <div class="fc-icon">💊</div>
+          <div class="fc-text">
+            <strong>Medicine Reminder</strong>
+            <span>Metformin 500mg — 8:00 PM tonight</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel-right">
+    <div class="auth-card">
+
+      <!-- TABS -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab-btn" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <!-- ═══════════════════════════════ LOGIN ═══════════════════════════════ -->
+      <div class="form-panel active" id="panel-login">
+        <h2 class="form-heading">Welcome back 👋</h2>
+        <p class="form-sub">Sign in to your MediScan AI account to continue your health journey.</p>
+
+        <div class="social-btns">
+          <a href="#" class="social-btn"><span class="social-icon">G</span> Google</a>
+          <a href="#" class="social-btn"><span class="social-icon">🍎</span> Apple</a>
+        </div>
+
+        <div class="divider"><span>or continue with email</span></div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input class="form-input" type="email" id="l-email" placeholder="you@example.com" autocomplete="email"/>
+          </div>
+          <div class="field-err" id="l-email-err">Please enter a valid email.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-input" type="password" id="l-password" placeholder="Your password" autocomplete="current-password"/>
+            <button class="pw-toggle" onclick="togglePw('l-password',this)" type="button" title="Show/hide password">👁</button>
+          </div>
+          <div class="field-err" id="l-pw-err">Password must be at least 8 characters.</div>
+        </div>
+
+        <div class="form-footer">
+          <label class="remember-group">
+            <div class="custom-check" id="remember-check" onclick="toggleCheck(this)"></div>
+            Remember me
+          </label>
+          <a href="#" class="forgot-link" onclick="showForgot(); return false;">Forgot password?</a>
+        </div>
+
+        <button class="submit-btn" onclick="handleLogin()">
+          <span class="spinner"></span>
+          <span class="btn-text">Sign In →</span>
+        </button>
+
+        <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:18px;">
+          Don't have an account?
+          <span style="color:var(--accent);cursor:pointer;" onclick="switchTab('register')">Create one free</span>
+        </p>
+      </div>
+
+      <!-- ═════════════════════════ FORGOT PASSWORD ═════════════════════════ -->
+      <div class="form-panel" id="panel-forgot">
+        <button class="back-step-btn" onclick="showLogin()">← Back to Sign In</button>
+        <h2 class="form-heading">Reset Password 🔑</h2>
+        <p class="form-sub">Enter your email and we'll send you a 6-digit OTP to reset your password.</p>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input class="form-input" type="email" id="f-email" placeholder="you@example.com"/>
+          </div>
+        </div>
+
+        <button class="submit-btn" onclick="handleForgot()">
+          <span class="spinner"></span>
+          <span class="btn-text">Send Reset OTP →</span>
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════ REGISTER ═══════════════════════════════ -->
+      <div class="form-panel" id="panel-register">
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+          <div class="step-dot active" id="sd1">1</div>
+          <div class="step-line" id="sl1"></div>
+          <div class="step-dot" id="sd2">2</div>
+          <div class="step-line" id="sl2"></div>
+          <div class="step-dot" id="sd3">3</div>
+        </div>
+        <div class="step-labels">
+          <span class="step-lbl active" id="slbl1">Account</span>
+          <span class="step-lbl" id="slbl2">Verify OTP</span>
+          <span class="step-lbl" id="slbl3">Profile</span>
+        </div>
+
+        <div class="reg-progress">
+          <div class="reg-progress-fill" id="reg-bar" style="width:33%"></div>
+        </div>
+
+        <!-- ── STEP 1: Account Details ── -->
+        <div id="reg-step1">
+          <h2 class="form-heading">Create account ✨</h2>
+          <p class="form-sub">Start your AI-powered health journey. Free forever.</p>
+
+          <div class="social-btns">
+            <a href="#" class="social-btn"><span class="social-icon">G</span> Google</a>
+            <a href="#" class="social-btn"><span class="social-icon">🍎</span> Apple</a>
+          </div>
+          <div class="divider"><span>or with email</span></div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input class="form-input" type="text" id="r-fname" placeholder="Rahul"/>
+              </div>
+              <div class="field-err" id="r-fname-err">Required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">👤</span>
+                <input class="form-input" type="text" id="r-lname" placeholder="Sharma"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div class="input-wrap">
+              <span class="input-icon">✉</span>
+              <input class="form-input" type="email" id="r-email" placeholder="you@example.com"/>
+            </div>
+            <div class="field-err" id="r-email-err">Enter a valid email.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input class="form-input" type="password" id="r-password" placeholder="Create a strong password" oninput="updateStrength(this.value)"/>
+              <button class="pw-toggle" onclick="togglePw('r-password',this)" type="button">👁</button>
+            </div>
+            <div class="pw-strength">
+              <div class="strength-bars">
+                <div class="sb" id="sb1"></div>
+                <div class="sb" id="sb2"></div>
+                <div class="sb" id="sb3"></div>
+                <div class="sb" id="sb4"></div>
+              </div>
+              <div class="strength-label" id="strength-lbl">Enter a password</div>
+            </div>
+            <div class="field-err" id="r-pw-err">Minimum 8 characters required.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input class="form-input" type="password" id="r-confirm" placeholder="Re-enter password"/>
+              <button class="pw-toggle" onclick="togglePw('r-confirm',this)" type="button">👁</button>
+            </div>
+            <div class="field-err" id="r-confirm-err">Passwords do not match.</div>
+          </div>
+
+          <div class="check-group">
+            <div class="custom-check" id="terms-check" onclick="toggleCheck(this)"></div>
+            <div class="check-label">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. My data will be stored encrypted.</div>
+          </div>
+
+          <button class="submit-btn" onclick="handleRegStep1()">
+            <span class="spinner"></span>
+            <span class="btn-text">Continue & Send OTP →</span>
+          </button>
+
+          <p style="text-align:center;font-size:.78rem;color:var(--muted);margin-top:18px;">
+            Already have an account?
+            <span style="color:var(--accent);cursor:pointer;" onclick="switchTab('login')">Sign in</span>
+          </p>
+        </div>
+
+        <!-- ── STEP 2: OTP Verification ── -->
+        <div id="reg-step2" style="display:none">
+          <button class="back-step-btn" onclick="goStep(1)">← Back</button>
+          <h2 class="form-heading">Verify Email 📬</h2>
+          <p class="form-sub">We've sent a 6-digit OTP to <strong id="otp-email-show" style="color:var(--accent)">your@email.com</strong>. Enter it below.</p>
+
+          <div class="form-group">
+            <div class="otp-group">
+              <input class="otp-input" type="text" maxlength="1" id="o1" oninput="otpNext(this,'o2')" onkeydown="otpBack(event,this,'')"/>
+              <input class="otp-input" type="text" maxlength="1" id="o2" oninput="otpNext(this,'o3')" onkeydown="otpBack(event,this,'o1')"/>
+              <input class="otp-input" type="text" maxlength="1" id="o3" oninput="otpNext(this,'o4')" onkeydown="otpBack(event,this,'o2')"/>
+              <input class="otp-input" type="text" maxlength="1" id="o4" oninput="otpNext(this,'o5')" onkeydown="otpBack(event,this,'o3')"/>
+              <input class="otp-input" type="text" maxlength="1" id="o5" oninput="otpNext(this,'o6')" onkeydown="otpBack(event,this,'o4')"/>
+              <input class="otp-input" type="text" maxlength="1" id="o6" oninput="otpNext(this,'')"  onkeydown="otpBack(event,this,'o5')"/>
+            </div>
+            <div class="otp-info">Didn't receive it? <span onclick="resendOtp()">Resend OTP</span></div>
+            <div class="otp-timer" id="otp-timer">Resend available in <strong id="countdown">60</strong>s</div>
+          </div>
+
+          <button class="submit-btn" onclick="handleOtpVerify()">
+            <span class="spinner"></span>
+            <span class="btn-text">Verify & Continue →</span>
+          </button>
+        </div>
+
+        <!-- ── STEP 3: Health Profile ── -->
+        <div id="reg-step3" style="display:none">
+          <button class="back-step-btn" onclick="goStep(2)">← Back</button>
+          <h2 class="form-heading">Your Health Profile 🏥</h2>
+          <p class="form-sub">Help us personalise your experience. This can be updated later.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date of Birth</label>
+              <div class="input-wrap">
+                <span class="input-icon">📅</span>
+                <input class="form-input" type="date" id="r-dob"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender</label>
+              <div class="input-wrap">
+                <span class="input-icon">⚧</span>
+                <select class="form-input" id="r-gender" style="padding-left:42px">
+                  <option value="" disabled selected>Select</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Non-binary</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">City / Area</label>
+            <div class="input-wrap">
+              <span class="input-icon">📍</span>
+              <input class="form-input" type="text" id="r-city" placeholder="e.g. Delhi, Sector 12"/>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Blood Group</label>
+              <div class="input-wrap">
+                <span class="input-icon">🩸</span>
+                <select class="form-input" id="r-blood" style="padding-left:42px">
+                  <option value="" disabled selected>Select</option>
+                  <option>A+</option><option>A-</option>
+                  <option>B+</option><option>B-</option>
+                  <option>O+</option><option>O-</option>
+                  <option>AB+</option><option>AB-</option>
+                  <option>Unknown</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Preferred Language</label>
+              <div class="input-wrap">
+                <span class="input-icon">🌐</span>
+                <select class="form-input" id="r-lang" style="padding-left:42px">
+                  <option>English</option>
+                  <option>हिंदी (Hindi)</option>
+                  <option>Русский (Russian)</option>
+                  <option>বাংলা (Bengali)</option>
+                  <option>தமிழ் (Tamil)</option>
+                  <option>Deutsch</option>
+                  <option>Français</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Known Conditions (optional)</label>
+            <div class="input-wrap">
+              <span class="input-icon">🩺</span>
+              <input class="form-input" type="text" id="r-conditions" placeholder="e.g. Diabetes, Hypertension, Asthma"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Emergency Contact Phone</label>
+            <div class="input-wrap">
+              <span class="input-icon">📞</span>
+              <input class="form-input" type="tel" id="r-phone" placeholder="+91 98765 43210"/>
+            </div>
+          </div>
+
+          <button class="submit-btn" onclick="handleRegStep3()">
+            <span class="spinner"></span>
+            <span class="btn-text">Create My Health Account 🚀</span>
+          </button>
+        </div>
+
+        <!-- ── SUCCESS ── -->
+        <div class="success-screen" id="reg-success">
+          <div class="success-icon">✅</div>
+          <div class="success-title">Account Created!</div>
+          <p class="success-sub">
+            Welcome to MediScan AI! Your encrypted health profile is ready.<br>
+            You'll be redirected to your dashboard shortly.
+          </p>
+          <button class="submit-btn" onclick="alert('Redirecting to Dashboard...')">
+            <span class="btn-text">Go to Dashboard →</span>
+          </button>
+        </div>
+
+      </div><!-- /panel-register -->
+
+    </div><!-- /auth-card -->
+  </div><!-- /panel-right -->
+</div><!-- /page-wrap -->
+
+<script>
+/* ─── TAB SWITCHING ─── */
+let activeTab = 'login';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1));
+  });
+  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+function showForgot() {
+  document.querySelectorAll('.form-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-forgot').classList.add('active');
+}
+function showLogin() {
+  document.querySelectorAll('.form-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-login').classList.add('active');
+}
+
+/* ─── TOGGLE PASSWORD VISIBILITY ─── */
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  const hidden = inp.type === 'password';
+  inp.type = hidden ? 'text' : 'password';
+  btn.textContent = hidden ? '🙈' : '👁';
+}
+
+/* ─── CHECKBOX ─── */
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  el.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+/* ─── PASSWORD STRENGTH ─── */
+function updateStrength(pw) {
+  let score = 0;
+  if(pw.length >= 8) score++;
+  if(/[A-Z]/.test(pw)) score++;
+  if(/[0-9]/.test(pw)) score++;
+  if(/[^A-Za-z0-9]/.test(pw)) score++;
+
+  const colors = ['#ff6b6b','#ffb86c','#0090ff','#00c8a0'];
+  const labels = ['Too weak','Fair','Good','Strong 💪'];
+  const bars   = [document.getElementById('sb1'),document.getElementById('sb2'),document.getElementById('sb3'),document.getElementById('sb4')];
+
+  bars.forEach((b,i) => {
+    b.style.background = i < score ? colors[score-1] : 'var(--border2)';
+  });
+  document.getElementById('strength-lbl').textContent = pw.length ? labels[score-1] || labels[0] : 'Enter a password';
+  document.getElementById('strength-lbl').style.color = pw.length ? colors[score-1] : 'var(--muted)';
+}
+
+/* ─── FIELD VALIDATION ─── */
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  const inp = el.previousElementSibling?.querySelector?.('.form-input') || el.parentElement.querySelector('.form-input');
+  if(inp) inp.classList.add('error');
+  return false;
+}
+function clearErr(id) {
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('show');
+}
+
+function validateEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+/* ─── FAKE LOADING ─── */
+function withLoading(btn, delay, cb) {
+  btn.classList.add('loading');
+  setTimeout(()=>{ btn.classList.remove('loading'); cb(); }, delay);
+}
+
+/* ─── LOGIN ─── */
+function handleLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pw    = document.getElementById('l-password').value;
+  let ok = true;
+
+  clearErr('l-email-err'); clearErr('l-pw-err');
+  document.getElementById('l-email').classList.remove('error');
+  document.getElementById('l-password').classList.remove('error');
+
+  if(!validateEmail(email)){ showErr('l-email-err','Please enter a valid email.'); ok=false; }
+  if(pw.length < 8){ showErr('l-pw-err','Password must be at least 8 characters.'); ok=false; }
+
+  if(!ok) return;
+
+  const btn = document.querySelector('#panel-login .submit-btn');
+  withLoading(btn, 1800, ()=>{
+    document.getElementById('l-email').classList.add('success');
+    document.getElementById('l-password').classList.add('success');
+    setTimeout(()=>alert('✅ Login successful! Redirecting to Dashboard...'), 200);
+  });
+}
+
+/* ─── FORGOT ─── */
+function handleForgot() {
+  const email = document.getElementById('f-email').value.trim();
+  if(!validateEmail(email)){ alert('Please enter a valid email.'); return; }
+  const btn = document.querySelector('#panel-forgot .submit-btn');
+  withLoading(btn, 1500, ()=>{ alert(`OTP sent to ${email}`); });
+}
+
+/* ─── REGISTER STEPS ─── */
+let regStep = 1;
+
+function goStep(n) {
+  document.getElementById(`reg-step${regStep}`).style.display='none';
+  regStep = n;
+  document.getElementById(`reg-step${n}`).style.display='block';
+  updateStepUI();
+}
+
+function updateStepUI() {
+  const bars = [33, 66, 100];
+  document.getElementById('reg-bar').style.width = bars[regStep-1] + '%';
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById(`sd${i}`);
+    const lbl = document.getElementById(`slbl${i}`);
+    dot.className = 'step-dot' + (i < regStep ? ' done' : i===regStep ? ' active' : '');
+    dot.textContent = i < regStep ? '✓' : i;
+    lbl.className   = 'step-lbl' + (i===regStep ? ' active' : '');
+    if(i < 3) {
+      document.getElementById(`sl${i}`).className = 'step-line' + (i < regStep ? ' done' : '');
+    }
+  });
+}
+
+function handleRegStep1() {
+  const fname  = document.getElementById('r-fname').value.trim();
+  const email  = document.getElementById('r-email').value.trim();
+  const pw     = document.getElementById('r-password').value;
+  const confirm= document.getElementById('r-confirm').value;
+  const terms  = document.getElementById('terms-check').classList.contains('checked');
+  let ok = true;
+
+  ['r-fname-err','r-email-err','r-pw-err','r-confirm-err'].forEach(clearErr);
+  ['r-fname','r-email','r-password','r-confirm'].forEach(id=>document.getElementById(id).classList.remove('error'));
+
+  if(!fname){ document.getElementById('r-fname-err').textContent='Required.'; document.getElementById('r-fname-err').classList.add('show'); document.getElementById('r-fname').classList.add('error'); ok=false; }
+  if(!validateEmail(email)){ document.getElementById('r-email-err').textContent='Enter a valid email.'; document.getElementById('r-email-err').classList.add('show'); document.getElementById('r-email').classList.add('error'); ok=false; }
+  if(pw.length < 8){ document.getElementById('r-pw-err').classList.add('show'); document.getElementById('r-password').classList.add('error'); ok=false; }
+  if(pw !== confirm){ document.getElementById('r-confirm-err').classList.add('show'); document.getElementById('r-confirm').classList.add('error'); ok=false; }
+  if(!terms){ alert('Please agree to the Terms of Service to continue.'); ok=false; }
+
+  if(!ok) return;
+
+  document.getElementById('otp-email-show').textContent = email;
+
+  const btn = document.querySelector('#reg-step1 .submit-btn');
+  withLoading(btn, 1500, ()=>{
+    goStep(2);
+    startCountdown();
+    setTimeout(()=>document.getElementById('o1').focus(), 100);
+  });
+}
+
+/* ─── OTP ─── */
+let countdownTimer = null;
+function startCountdown() {
+  let t = 60;
+  clearInterval(countdownTimer);
+  document.getElementById('countdown').textContent = t;
+  countdownTimer = setInterval(()=>{
+    t--;
+    document.getElementById('countdown').textContent = t;
+    if(t <= 0){
+      clearInterval(countdownTimer);
+      document.getElementById('otp-timer').innerHTML = '<span style="color:var(--accent);cursor:pointer;" onclick="resendOtp()">Resend OTP now</span>';
+    }
+  }, 1000);
+}
+
+function resendOtp() {
+  document.querySelectorAll('.otp-input').forEach(i=>i.value='');
+  document.getElementById('o1').focus();
+  document.getElementById('otp-timer').innerHTML = 'Resend available in <strong id="countdown">60</strong>s';
+  startCountdown();
+  alert('A new OTP has been sent to your email!');
+}
+
+function otpNext(el, nextId) {
+  el.value = el.value.replace(/[^0-9]/g,'');
+  if(el.value && nextId) document.getElementById(nextId)?.focus();
+}
+function otpBack(e, el, prevId) {
+  if(e.key==='Backspace' && !el.value && prevId) document.getElementById(prevId)?.focus();
+}
+
+function handleOtpVerify() {
+  const otp = ['o1','o2','o3','o4','o5','o6'].map(id=>document.getElementById(id).value).join('');
+  if(otp.length < 6){ alert('Please enter all 6 digits.'); return; }
+  const btn = document.querySelector('#reg-step2 .submit-btn');
+  withLoading(btn, 1500, ()=>{ clearInterval(countdownTimer); goStep(3); });
+}
+
+/* ─── STEP 3 ─── */
+function handleRegStep3() {
+  const btn = document.querySelector('#reg-step3 .submit-btn');
+  withLoading(btn, 2000, ()=>{
+    document.getElementById('reg-step3').style.display='none';
+    document.getElementById('reg-success').classList.add('show');
+    document.getElementById('reg-bar').style.width='100%';
+    [1,2,3].forEach(i=>{ const d=document.getElementById(`sd${i}`); d.className='step-dot done'; d.textContent='✓'; });
+    [1,2].forEach(i=>document.getElementById(`sl${i}`).className='step-line done');
+  });
+}
+
+/* ─── PASTE OTP from clipboard ─── */
+document.addEventListener('paste', e => {
+  const t = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+  if(t.length === 6 && document.getElementById('reg-step2')?.style.display !== 'none') {
+    ['o1','o2','o3','o4','o5','o6'].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=t[i]||''; });
+    document.getElementById('o6')?.focus();
+    e.preventDefault();
+  }
+});
+
+/* ─── INPUT ENTER KEY ─── */
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter') {
+    if(activeTab === 'login' && document.getElementById('panel-login').classList.contains('active')) handleLogin();
+  }
+});
+</script>
+</body>
+</html>
