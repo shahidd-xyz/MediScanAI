@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan AI — Your Intelligent Health Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050d14;
+    --surface: #0a1724;
+    --surface2: #0f2030;
+    --accent: #00c8a0;
+    --accent2: #0090ff;
+    --accent3: #ff6b6b;
+    --text: #e8f4f0;
+    --muted: #6a8fa0;
+    --border: rgba(0,200,160,0.12);
+    --glow: rgba(0,200,160,0.18);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(5,13,20,0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.4rem;
+    letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.875rem; letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    display: flex; gap: 12px;
+  }
+  .btn {
+    padding: 10px 22px; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; border: none;
+    transition: all 0.2s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    color: #050d14;
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background: #00e8ba;
+    box-shadow: 0 0 20px rgba(0,200,160,0.4);
+    transform: translateY(-1px);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* GRID BACKGROUND */
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,160,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,160,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black, transparent);
+    pointer-events: none;
+  }
+
+  /* GLOW BLOBS */
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); pointer-events: none;
+    animation: drift 8s ease-in-out infinite alternate;
+  }
+  .blob-1 { width: 500px; height: 500px; background: rgba(0,200,160,0.08); top: -100px; left: -100px; }
+  .blob-2 { width: 400px; height: 400px; background: rgba(0,144,255,0.07); bottom: -80px; right: -80px; animation-delay: -4s; }
+  .blob-3 { width: 300px; height: 300px; background: rgba(255,107,107,0.05); top: 40%; left: 60%; animation-delay: -2s; }
+  @keyframes drift {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(30px,40px) scale(1.1); }
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,200,160,0.08);
+    border: 1px solid rgba(0,200,160,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.78rem; letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    max-width: 560px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 40px;
+    line-height: 1.7;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.3s both;
+    margin-bottom: 64px;
+  }
+  .btn-large { padding: 14px 32px; font-size: 1rem; border-radius: 10px; }
+
+  .hero-stats {
+    display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.8rem;
+    color: var(--accent);
+  }
+  .stat-label { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.06em; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── MOCKUP DASHBOARD ─── */
+  .dashboard-preview {
+    width: 100%; max-width: 900px;
+    margin: 0 auto 0;
+    position: relative;
+    animation: fadeUp 1s ease 0.5s both;
+  }
+  .dashboard-preview::before {
+    content: '';
+    position: absolute; inset: -2px; border-radius: 20px;
+    background: linear-gradient(135deg, rgba(0,200,160,0.3), rgba(0,144,255,0.2), transparent);
+    z-index: -1;
+  }
+  .dash-window {
+    background: var(--surface);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 40px rgba(0,200,160,0.05);
+  }
+  .dash-titlebar {
+    background: var(--surface2);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .win-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .dash-body {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    min-height: 340px;
+  }
+  .dash-sidebar {
+    background: rgba(0,0,0,0.2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+  }
+  .sidebar-item {
+    padding: 10px 20px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: all 0.2s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item.active {
+    color: var(--accent); border-left-color: var(--accent);
+    background: rgba(0,200,160,0.06);
+  }
+  .sidebar-item:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+  .sidebar-icon { font-size: 0.9rem; width: 18px; }
+
+  .dash-content { padding: 20px; }
+  .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .dash-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .dc-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 6px; }
+  .dc-val {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 1.4rem;
+  }
+  .dc-val.green { color: var(--accent); }
+  .dc-val.blue { color: var(--accent2); }
+  .dc-val.red { color: var(--accent3); }
+  .dc-sub { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+
+  .dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mini-chart {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    height: 100px;
+    display: flex; flex-direction: column;
+  }
+  .chart-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 8px; }
+  .bar-row { display: flex; align-items: flex-end; gap: 4px; flex: 1; }
+  .bar {
+    flex: 1; border-radius: 3px 3px 0 0;
+    background: var(--accent);
+    opacity: 0.7;
+    animation: growUp 1s ease both;
+  }
+  @keyframes growUp {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to   { transform: scaleY(1); }
+  }
+  .bar:nth-child(1){height:40%; animation-delay:0.6s}
+  .bar:nth-child(2){height:60%; animation-delay:0.65s}
+  .bar:nth-child(3){height:45%; animation-delay:0.7s}
+  .bar:nth-child(4){height:80%; animation-delay:0.75s}
+  .bar:nth-child(5){height:55%; animation-delay:0.8s}
+  .bar:nth-child(6){height:90%; animation-delay:0.85s}
+  .bar:nth-child(7){height:70%; animation-delay:0.9s; background: var(--accent2);}
+
+  .heatmap-mini {
+    display: grid; grid-template-columns: repeat(8,1fr); gap: 3px;
+    flex: 1;
+  }
+  .hm-cell {
+    border-radius: 2px;
+    animation: fadeIn 0.4s ease both;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ─── FEATURES ─── */
+  section { padding: 100px 48px; }
+
+  .section-label {
+    font-size: 0.75rem; letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: clamp(1.8rem, 3.5vw, 3rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    line-height: 1.15;
+  }
+  .section-sub {
+    color: var(--muted); max-width: 520px;
+    font-size: 1rem; line-height: 1.7;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 56px;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: all 0.3s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 0% 0%, var(--card-glow, rgba(0,200,160,0.06)), transparent 60%);
+    pointer-events: none;
+  }
+  .feature-card:hover {
+    border-color: rgba(0,200,160,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  .feature-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+  }
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600; font-size: 1.05rem;
+    margin-bottom: 10px;
+  }
+  .feature-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+
+  /* ─── HOW IT WORKS ─── */
+  .steps {
+    max-width: 900px;
+    margin: 56px auto 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 36px; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    opacity: 0.3;
+  }
+  .step { text-align: center; padding: 0 16px; }
+  .step-num {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.3rem;
+    color: var(--accent);
+    position: relative; z-index: 1;
+    box-shadow: 0 0 30px rgba(0,200,160,0.1);
+  }
+  .step h4 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600; font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+  .step p { font-size: 0.8rem; color: var(--muted); }
+
+  /* ─── CHATBOT DEMO ─── */
+  .chatbot-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .chatbot-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .chat-window {
+    background: var(--bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .chat-header {
+    background: var(--surface2);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+  }
+  .chat-name { font-weight: 500; font-size: 0.9rem; }
+  .chat-status { font-size: 0.72rem; color: var(--accent); }
+  .chat-msgs { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .msg {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    animation: fadeUp 0.5s ease both;
+  }
+  .msg.ai {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+  }
+  .msg.user {
+    background: var(--accent);
+    color: #050d14;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+    font-weight: 500;
+  }
+  .msg.hindi {
+    background: rgba(0,144,255,0.12);
+    border: 1px solid rgba(0,144,255,0.2);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+    color: #7dc4ff;
+  }
+  .lang-tag {
+    font-size: 0.6rem; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 4px; display: block;
+    text-transform: uppercase;
+  }
+  .chat-input {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .chat-input input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+  }
+  .chat-input input::placeholder { color: var(--muted); }
+  .send-btn {
+    width: 34px; height: 34px;
+    background: var(--accent);
+    border: none; border-radius: 8px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: #050d14; font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .send-btn:hover { background: #00e8ba; transform: scale(1.05); }
+
+  /* ─── HEATMAP PREVIEW ─── */
+  .heatmap-section { background: transparent; }
+  .heatmap-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px; align-items: center;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .map-widget {
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .map-title-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .map-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .legend {
+    display: flex; gap: 8px; align-items: center;
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .legend-bar {
+    width: 60px; height: 8px; border-radius: 4px;
+    background: linear-gradient(90deg, #00c8a0, #0090ff, #ff6b6b);
+  }
+  .map-grid-lg {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 4px;
+  }
+  .hm-lg {
+    aspect-ratio: 1; border-radius: 3px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .hm-lg:hover { transform: scale(1.4); z-index: 10; }
+  .map-labels { display: flex; justify-content: space-between; margin-top: 12px; }
+  .map-label { font-size: 0.65rem; color: var(--muted); }
+
+  .heat-legend-cards {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 20px;
+  }
+  .hlc {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+  }
+  .hlc-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .hlc-name { font-weight: 500; flex: 1; }
+  .hlc-count { color: var(--muted); font-size: 0.75rem; }
+  .hlc-bar-bg { flex: 2; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; }
+  .hlc-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* ─── NOTIFICATIONS PREVIEW ─── */
+  .notif-section { background: var(--surface); border-top: 1px solid var(--border); }
+  .notif-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px; align-items: center;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .notif-list { display: flex; flex-direction: column; gap: 12px; }
+  .notif-card {
+    background: var(--bg);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex; align-items: flex-start; gap: 14px;
+    transition: all 0.2s;
+  }
+  .notif-card:hover { border-color: rgba(0,200,160,0.25); transform: translateX(4px); }
+  .notif-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .notif-body { flex: 1; }
+  .notif-title { font-weight: 500; font-size: 0.85rem; margin-bottom: 3px; }
+  .notif-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+  .notif-time { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    text-align: center;
+    padding: 100px 48px;
+    position: relative; overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,200,160,0.07) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: clamp(2rem, 4vw, 3.5rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    line-height: 1.1;
+  }
+  .cta-section p {
+    color: var(--muted); max-width: 480px;
+    margin: 0 auto 36px; font-size: 1rem; line-height: 1.7;
+  }
+  .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 700; }
+  .footer-links { display: flex; gap: 28px; list-style: none; }
+  .footer-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy { font-size: 0.75rem; color: var(--muted); }
+
+  /* LANG PILLS */
+  .lang-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .lang-pill {
+    padding: 5px 14px; border-radius: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    font-size: 0.75rem; color: var(--muted);
+  }
+
+  /* SCROLL FADE-IN */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* RESPONSIVE */
+  @media(max-width:900px) {
+    nav { padding: 14px 24px; }
+    .nav-links { display: none; }
+    section { padding: 72px 24px; }
+    .dash-body { grid-template-columns: 1fr; }
+    .dash-sidebar { display: none; }
+    .chatbot-layout, .heatmap-layout, .notif-layout { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: repeat(2,1fr); }
+    .steps::before { display: none; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    MediScan<span style="color:var(--accent)">AI</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#chatbot">AI Chatbot</a></li>
+    <li><a href="#heatmap">Heatmap</a></li>
+    <li><a href="#notifications">Reminders</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="#" class="btn btn-ghost">Log In</a>
+    <a href="#" class="btn btn-primary">Get Started →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="hero-badge">
+    <div class="badge-dot"></div>
+    AI-Powered Health Intelligence Platform
+  </div>
+
+  <h1>
+    Your Health,<br>
+    <em>Understood</em> Completely
+  </h1>
+
+  <p>Upload your medical reports, let our AI analyse and build your full health profile, track medicines, get smart reminders — in your language.</p>
+
+  <div class="hero-actions">
+    <a href="#" class="btn btn-primary btn-large">🚀 Start For Free</a>
+    <a href="#" class="btn btn-ghost btn-large">▶ Watch Demo</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">50+</div>
+      <div class="stat-label">Languages Supported</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">99.2%</div>
+      <div class="stat-label">Report Accuracy</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">1M+</div>
+      <div class="stat-label">Reports Analysed</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0ms</div>
+      <div class="stat-label">Data Breach Risk</div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD PREVIEW -->
+<div style="padding:0 48px 80px; position:relative; z-index:1;">
+  <div class="dashboard-preview reveal">
+    <div class="dash-window">
+      <div class="dash-titlebar">
+        <div class="win-dot" style="background:#ff6b6b"></div>
+        <div class="win-dot" style="background:#ffb86c"></div>
+        <div class="win-dot" style="background:#00c8a0"></div>
+        <span style="margin-left:12px; font-size:0.75rem; color:var(--muted)">MediScan AI — Health Dashboard</span>
+      </div>
+      <div class="dash-body">
+        <div class="dash-sidebar">
+          <div class="sidebar-item active"><span class="sidebar-icon">📊</span> Dashboard</div>
+          <div class="sidebar-item"><span class="sidebar-icon">📁</span> My Reports</div>
+          <div class="sidebar-item"><span class="sidebar-icon">💊</span> Medicines</div>
+          <div class="sidebar-item"><span class="sidebar-icon">🗺️</span> Heatmap</div>
+          <div class="sidebar-item"><span class="sidebar-icon">🤖</span> AI Chatbot</div>
+          <div class="sidebar-item"><span class="sidebar-icon">🔔</span> Reminders</div>
+          <div class="sidebar-item"><span class="sidebar-icon">📋</span> Gov. Schemes</div>
+          <div class="sidebar-item"><span class="sidebar-icon">⚙️</span> Settings</div>
+        </div>
+        <div class="dash-content">
+          <div class="dash-grid">
+            <div class="dash-card">
+              <div class="dc-label">HEALTH SCORE</div>
+              <div class="dc-val green">78 / 100</div>
+              <div class="dc-sub">↑ +3 this week</div>
+            </div>
+            <div class="dash-card">
+              <div class="dc-label">ACTIVE CONDITIONS</div>
+              <div class="dc-val blue">2</div>
+              <div class="dc-sub">Diabetes · Hypertension</div>
+            </div>
+            <div class="dash-card">
+              <div class="dc-label">MEDICINES TODAY</div>
+              <div class="dc-val">4 / 4</div>
+              <div class="dc-sub" style="color:var(--accent)">✓ All taken</div>
+            </div>
+          </div>
+          <div class="dash-row">
+            <div class="mini-chart">
+              <div class="chart-label">BLOOD SUGAR — LAST 7 DAYS</div>
+              <div class="bar-row">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div>
+              </div>
+            </div>
+            <div class="mini-chart">
+              <div class="chart-label">AREA SYMPTOM DENSITY</div>
+              <div class="heatmap-mini" id="dashHeat"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features" style="padding-top:80px;">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="reveal">
+      <div class="section-label">Core Features</div>
+      <div class="section-title">Everything your health<br>needs in one place</div>
+      <p class="section-sub">From uploading a lab report to knowing if your new medicine is better than the last — MediScan AI covers every step of your health journey.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal" style="--card-glow:rgba(0,200,160,0.08)">
+        <div class="feature-icon" style="background:rgba(0,200,160,0.1)">🧬</div>
+        <div class="feature-title">AI Report Analysis</div>
+        <div class="feature-desc">Upload any medical report — blood test, X-ray, MRI, prescription — and our AI gives you a human-readable summary with conditions identified, in your language.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(0,144,255,0.08)">
+        <div class="feature-icon" style="background:rgba(0,144,255,0.1)">🗺️</div>
+        <div class="feature-title">Symptom Heatmap</div>
+        <div class="feature-desc">See which diseases or symptoms are spreading in your area in real-time. Color-coded colony-level heatmap helps spot outbreaks early and informs government reports.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(255,107,107,0.08)">
+        <div class="feature-icon" style="background:rgba(255,107,107,0.1)">💊</div>
+        <div class="feature-title">Medicine Tracker</div>
+        <div class="feature-desc">Track every medicine you take. The system compares your current vs previous medicines and tells you if your health is improving — backed by your own report data.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(255,184,108,0.08)">
+        <div class="feature-icon" style="background:rgba(255,184,108,0.1)">🔔</div>
+        <div class="feature-title">Smart Reminders</div>
+        <div class="feature-desc">Timely medicine reminders at the exact scheduled hour. Also get notified about new government health schemes, free check-up camps, and vaccination drives in your area.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(160,100,255,0.08)">
+        <div class="feature-icon" style="background:rgba(160,100,255,0.1)">🤖</div>
+        <div class="feature-title">Multilingual AI Chatbot</div>
+        <div class="feature-desc">Ask health questions in Hindi, English, Russian, Tamil, Bengali — any language. The chatbot understands you and responds in the same language with accurate medical guidance.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(0,200,160,0.08)">
+        <div class="feature-icon" style="background:rgba(0,200,160,0.1)">🏛️</div>
+        <div class="feature-title">Government Report Export</div>
+        <div class="feature-desc">Auto-generate area-wise health summary reports that can be sent directly to health authorities. Identify community-level disease patterns and support public health decisions.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(0,144,255,0.08)">
+        <div class="feature-icon" style="background:rgba(0,144,255,0.1)">☁️</div>
+        <div class="feature-title">Encrypted Cloud Storage</div>
+        <div class="feature-desc">All your medical documents stored securely in the cloud with AES-256 encryption. Access from any device, any time — only you can read your records.</div>
+      </div>
+      <div class="feature-card reveal" style="--card-glow:rgba(255,107,107,0.08)">
+        <div class="feature-icon" style="background:rgba(255,107,107,0.1)">🌐</div>
+        <div class="feature-title">Multi-Language Support</div>
+        <div class="feature-desc">The entire platform — dashboard, reports, chatbot, notifications — adapts to 50+ languages. True accessibility for every user across India and beyond.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="padding:80px 48px;">
+  <div style="max-width:1100px; margin:0 auto; text-align:center;">
+    <div class="reveal">
+      <div class="section-label">How It Works</div>
+      <div class="section-title">From Upload to Insight<br>in Minutes</div>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>Register & Verify</h4>
+        <p>Sign up with email, verify with OTP, and set up your health profile securely.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>Upload Reports</h4>
+        <p>Upload any medical document — PDF, image, or text. Our AI reads everything.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>AI Analyses</h4>
+        <p>Background analysis identifies conditions, medicines, and health trends automatically.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>Stay Informed</h4>
+        <p>Get reminders, chat with AI, view your heatmap, and track your progress daily.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI CHATBOT -->
+<section id="chatbot" class="chatbot-section">
+  <div class="chatbot-layout">
+    <div class="reveal">
+      <div class="section-label">AI Medical Assistant</div>
+      <div class="section-title">Ask Anything,<br>In Any Language</div>
+      <p class="section-sub">Our AI doctor understands your symptoms and suggests cures. Write in Hindi, English, Russian — it automatically detects and responds in the same language.</p>
+      <div class="lang-pills">
+        <span class="lang-pill">🇬🇧 English</span>
+        <span class="lang-pill">🇮🇳 हिंदी</span>
+        <span class="lang-pill">🇷🇺 Русский</span>
+        <span class="lang-pill">🇮🇳 বাংলা</span>
+        <span class="lang-pill">🇮🇳 தமிழ்</span>
+        <span class="lang-pill">🇩🇪 Deutsch</span>
+        <span class="lang-pill">🇫🇷 Français</span>
+        <span class="lang-pill">+ 43 more</span>
+      </div>
+    </div>
+    <div class="chat-window reveal">
+      <div class="chat-header">
+        <div class="chat-avatar">🤖</div>
+        <div>
+          <div class="chat-name">MediScan AI Assistant</div>
+          <div class="chat-status">● Online — 50+ languages</div>
+        </div>
+      </div>
+      <div class="chat-msgs">
+        <div class="msg ai">
+          <span class="lang-tag">EN — AI</span>
+          Hello! I'm your personal health assistant. I can analyse your symptoms, explain your reports, and suggest remedies. How can I help you today?
+        </div>
+        <div class="msg user">मुझे पिछले 3 दिनों से खांसी और बुखार है।</div>
+        <div class="msg hindi">
+          <span class="lang-tag">HI — AI</span>
+          आपके लक्षणों के आधार पर यह सामान्य वायरल संक्रमण या फ्लू हो सकता है। पर्याप्त आराम करें, गर्म पानी पिएं और Paracetamol 500mg लें। यदि बुखार 3 दिनों से अधिक रहे तो डॉक्टर से मिलें।
+        </div>
+        <div class="msg user">Is my new blood pressure medicine better?</div>
+        <div class="msg ai">
+          <span class="lang-tag">EN — AI</span>
+          Based on your last 4 reports, your BP readings dropped from 148/95 to 128/82 — your new Amlodipine is working 23% better than your previous Atenolol. Keep monitoring weekly! ✅
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Type in any language..." />
+        <button class="send-btn">➤</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HEATMAP -->
+<section id="heatmap" class="heatmap-section">
+  <div class="heatmap-layout">
+    <div class="map-widget reveal">
+      <div class="map-title-bar">
+        <div class="map-title">📍 Delhi NCR — Symptom Heatmap</div>
+        <div class="legend">
+          <span>Low</span>
+          <div class="legend-bar"></div>
+          <span>High</span>
+        </div>
+      </div>
+      <div class="map-grid-lg" id="bigHeat"></div>
+      <div class="map-labels">
+        <span class="map-label">West Delhi</span>
+        <span class="map-label">Central</span>
+        <span class="map-label">East Delhi</span>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="section-label">Community Health Heatmap</div>
+      <div class="section-title">Know What's Spreading<br>In Your Area</div>
+      <p class="section-sub">Colour-coded heatmap shows symptom density across colonies and regions. Government-ready area reports are generated automatically.</p>
+      <div class="heat-legend-cards">
+        <div class="hlc">
+          <div class="hlc-dot" style="background:#ff6b6b"></div>
+          <div class="hlc-name">Dust Allergy</div>
+          <div class="hlc-count">1,240 cases</div>
+          <div class="hlc-bar-bg"><div class="hlc-bar-fill" style="width:90%;background:#ff6b6b"></div></div>
+        </div>
+        <div class="hlc">
+          <div class="hlc-dot" style="background:#ffb86c"></div>
+          <div class="hlc-name">Dengue Fever</div>
+          <div class="hlc-count">820 cases</div>
+          <div class="hlc-bar-bg"><div class="hlc-bar-fill" style="width:65%;background:#ffb86c"></div></div>
+        </div>
+        <div class="hlc">
+          <div class="hlc-dot" style="background:#0090ff"></div>
+          <div class="hlc-name">Viral Cough</div>
+          <div class="hlc-count">560 cases</div>
+          <div class="hlc-bar-bg"><div class="hlc-bar-fill" style="width:42%;background:#0090ff"></div></div>
+        </div>
+        <div class="hlc">
+          <div class="hlc-dot" style="background:#00c8a0"></div>
+          <div class="hlc-name">Hypertension</div>
+          <div class="hlc-count">310 cases</div>
+          <div class="hlc-bar-bg"><div class="hlc-bar-fill" style="width:25%;background:#00c8a0"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICATIONS -->
+<section id="notifications" class="notif-section">
+  <div class="notif-layout">
+    <div class="reveal">
+      <div class="section-label">Smart Notifications</div>
+      <div class="section-title">Never Miss a Dose<br>or a Scheme</div>
+      <p class="section-sub">Timely medicine reminders keep you on track. Government health scheme alerts ensure you always know what benefits you're entitled to.</p>
+    </div>
+    <div class="notif-list reveal">
+      <div class="notif-card">
+        <div class="notif-icon" style="background:rgba(0,200,160,0.1)">💊</div>
+        <div class="notif-body">
+          <div class="notif-title">Medicine Reminder</div>
+          <div class="notif-desc">Time to take Metformin 500mg (Dinner) · Amlodipine 5mg</div>
+        </div>
+        <div class="notif-time">8:00 PM</div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:rgba(255,107,107,0.1)">⚠️</div>
+        <div class="notif-body">
+          <div class="notif-title">Health Alert — Your Area</div>
+          <div class="notif-desc">Dengue cases rising in Dwarka Sector 6. Avoid stagnant water. Visit nearest PHC.</div>
+        </div>
+        <div class="notif-time">2h ago</div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:rgba(0,144,255,0.1)">🏛️</div>
+        <div class="notif-body">
+          <div class="notif-title">New Government Scheme</div>
+          <div class="notif-desc">PM-JAY 2.0 launched — Free dialysis for kidney patients. You may be eligible.</div>
+        </div>
+        <div class="notif-time">1d ago</div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon" style="background:rgba(255,184,108,0.1)">📋</div>
+        <div class="notif-body">
+          <div class="notif-title">Report Analysis Ready</div>
+          <div class="notif-desc">Your CBC report uploaded on 15 Mar has been analysed. View full summary.</div>
+        </div>
+        <div class="notif-time">3d ago</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="reveal">
+    <div class="section-label">Start Today</div>
+    <h2>Your Healthiest Life<br>Starts With One Upload</h2>
+    <p>Join thousands of users already tracking their health with AI-powered precision. Free to start, secure forever.</p>
+    <div class="cta-actions">
+      <a href="#" class="btn btn-primary btn-large">Create Free Account →</a>
+      <a href="#" class="btn btn-ghost btn-large">View Live Demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">MediScan<span style="color:var(--accent)">AI</span></div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy Policy</a></li>
+    <li><a href="#">Terms of Use</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">API for Developers</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 MediScanAI. All rights reserved. Built for a healthier India.</div>
+</footer>
+
+<script>
+  // ── Populate mini dashboard heatmap
+  const dashHeat = document.getElementById('dashHeat');
+  const cols = ['#00c8a0','#0090ff','#ffb86c','#ff6b6b'];
+  for(let i=0;i<40;i++){
+    const c = document.createElement('div');
+    c.className = 'hm-cell';
+    const v = Math.random();
+    const op = 0.2 + v * 0.8;
+    c.style.cssText = `background:${cols[Math.floor(v*cols.length)]};opacity:${op};aspect-ratio:1;border-radius:2px;animation-delay:${i*0.03}s`;
+    dashHeat.appendChild(c);
+  }
+
+  // ── Populate big heatmap
+  const bigHeat = document.getElementById('bigHeat');
+  const heatData = [];
+  for(let r=0;r<8;r++) for(let c=0;c<14;c++){
+    const x = c/13, y = r/7;
+    // simulate hotspot clusters
+    const d1 = Math.sqrt((x-0.2)**2+(y-0.3)**2);
+    const d2 = Math.sqrt((x-0.7)**2+(y-0.6)**2);
+    const d3 = Math.sqrt((x-0.5)**2+(y-0.2)**2);
+    const heat = Math.max(0, 1-d1*3) + Math.max(0,1-d2*3)*0.7 + Math.max(0,1-d3*2.5)*0.5;
+    heatData.push(Math.min(1, heat + Math.random()*0.15));
+  }
+  const maxH = Math.max(...heatData);
+  heatData.forEach((v,i) => {
+    const n = v/maxH;
+    const el = document.createElement('div');
+    el.className = 'hm-lg';
+    // Color: green→blue→orange→red
+    let r,g,b;
+    if(n < 0.33){ r=0; g=Math.round(200*n*3); b=Math.round(160+(95*n*3)); }
+    else if(n < 0.66){ const t=(n-0.33)/0.33; r=Math.round(255*t); g=Math.round(144+56*t); b=Math.round(255-95*t); }
+    else { const t=(n-0.66)/0.34; r=255; g=Math.round(144*(1-t)+107*t); b=Math.round(0); }
+    el.style.cssText = `background:rgb(${r},${g},${b});opacity:${0.3+n*0.7};animation-delay:${i*0.02}s`;
+    el.title = `Symptom density: ${Math.round(n*100)}%`;
+    bigHeat.appendChild(el);
+  });
+
+  // ── Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => io.observe(el));
+
+  // ── Add staggered reveal delays for grid children
+  document.querySelectorAll('.features-grid .feature-card, .steps .step, .notif-list .notif-card').forEach((el,i) => {
+    el.style.transitionDelay = `${i*0.08}s`;
+  });
+</script>
+</body>
+</html>
