@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MediScan AI — Upload Medical Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+/* ─── ROOT ─── */
+:root {
+  --bg:        #050d14;
+  --surface:   #0a1724;
+  --surface2:  #0f2030;
+  --surface3:  #142840;
+  --accent:    #00c8a0;
+  --accent2:   #0090ff;
+  --accent3:   #ff6b6b;
+  --accent4:   #ffb86c;
+  --text:      #e8f4f0;
+  --muted:     #6a8fa0;
+  --border:    rgba(0,200,160,0.13);
+  --border2:   rgba(255,255,255,0.07);
+  --shadow:    0 20px 60px rgba(0,0,0,0.5);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; }
+
+body {
+  font-family:'DM Sans',sans-serif;
+  font-weight:300;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* NOISE TEXTURE */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:0; opacity:0.35;
+}
+
+/* ─── NAV ─── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 0 0 0;
+  background:rgba(5,13,20,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  height:60px;
+}
+.nav-left {
+  display:flex; align-items:center; height:100%;
+}
+.nav-logo {
+  display:flex; align-items:center; gap:9px;
+  padding:0 24px;
+  font-family:'Syne',sans-serif; font-weight:800; font-size:1.2rem;
+  letter-spacing:-.02em; color:var(--text); text-decoration:none;
+  border-right:1px solid var(--border2); height:100%;
+}
+.logo-dot {
+  width:8px; height:8px; border-radius:50%;
+  background:var(--accent); box-shadow:0 0 10px var(--accent);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+.nav-breadcrumb {
+  display:flex; align-items:center; gap:8px;
+  padding:0 20px;
+  font-size:.8rem; color:var(--muted);
+}
+.nav-breadcrumb a { color:var(--muted); text-decoration:none; transition:color .2s; }
+.nav-breadcrumb a:hover { color:var(--accent); }
+.nav-breadcrumb span { color:var(--border2); }
+.nav-breadcrumb strong { color:var(--text); font-weight:500; }
+
+.nav-right {
+  display:flex; align-items:center; gap:12px; padding:0 20px;
+}
+.nav-avatar {
+  width:32px; height:32px; border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-size:.75rem; font-weight:700; color:#050d14; cursor:pointer;
+}
+.nav-notif {
+  position:relative; cursor:pointer;
+  width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--muted); font-size:1.1rem; transition:color .2s;
+}
+.nav-notif:hover { color:var(--text); }
+.notif-badge {
+  position:absolute; top:2px; right:2px;
+  width:8px; height:8px; border-radius:50%;
+  background:var(--accent3); border:1px solid var(--bg);
+}
+
+/* ─── LAYOUT ─── */
+.layout {
+  display:flex; height:100vh; padding-top:60px;
+  position:relative; z-index:1;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width:220px; flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  padding:20px 0;
+  position:sticky; top:60px; height:calc(100vh - 60px);
+  overflow-y:auto;
+}
+.sidebar-section {
+  padding:0 12px;
+  margin-bottom:6px;
+}
+.sidebar-label {
+  font-size:.62rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); padding:10px 8px 6px;
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:8px;
+  font-size:.82rem; color:var(--muted);
+  cursor:pointer; transition:all .2s;
+  text-decoration:none;
+  border:1px solid transparent;
+}
+.sidebar-item:hover { background:rgba(255,255,255,0.04); color:var(--text); }
+.sidebar-item.active {
+  background:rgba(0,200,160,0.08);
+  color:var(--accent); border-color:rgba(0,200,160,0.18);
+}
+.sidebar-icon { font-size:.95rem; width:20px; text-align:center; flex-shrink:0; }
+.sidebar-badge {
+  margin-left:auto; font-size:.6rem;
+  background:var(--accent3); color:#fff;
+  padding:2px 7px; border-radius:100px; font-weight:600;
+}
+.sidebar-badge.green { background:var(--accent); color:#050d14; }
+
+.sidebar-divider { height:1px; background:var(--border); margin:10px 12px; }
+
+.storage-widget {
+  margin:auto 12px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px;
+}
+.storage-label { font-size:.7rem; color:var(--muted); margin-bottom:8px; }
+.storage-bar-bg { height:4px; background:var(--border2); border-radius:2px; margin-bottom:6px; }
+.storage-bar-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:34%; }
+.storage-info { display:flex; justify-content:space-between; font-size:.68rem; color:var(--muted); }
+.storage-info span:last-child { color:var(--accent); }
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  flex:1; overflow-y:auto;
+  padding:32px 36px;
+  background:transparent;
+}
+
+/* PAGE HEADER */
+.page-header {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  margin-bottom:32px;
+  animation:fadeUp .6s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.page-title-group {}
+.page-eyebrow {
+  font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:6px;
+}
+.page-title {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:1.9rem; letter-spacing:-.025em; line-height:1.1;
+  margin-bottom:6px;
+}
+.page-sub { color:var(--muted); font-size:.875rem; }
+
+.header-actions { display:flex; gap:10px; align-items:center; }
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:9px 18px; border-radius:8px;
+  font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:500;
+  cursor:pointer; border:none; text-decoration:none; transition:all .2s;
+}
+.btn-ghost {
+  background:transparent; border:1px solid var(--border2); color:var(--muted);
+}
+.btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+.btn-primary {
+  background:var(--accent); color:#050d14; font-weight:600;
+}
+.btn-primary:hover {
+  background:#00e8ba; box-shadow:0 0 18px rgba(0,200,160,0.35);
+  transform:translateY(-1px);
+}
+
+/* ─── UPLOAD ZONE ─── */
+.upload-zone {
+  border:2px dashed rgba(0,200,160,0.25);
+  border-radius:18px;
+  background:rgba(0,200,160,0.025);
+  padding:52px 36px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .3s;
+  position:relative;
+  overflow:hidden;
+  margin-bottom:28px;
+  animation:fadeUp .6s ease .1s both;
+}
+.upload-zone::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    linear-gradient(rgba(0,200,160,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,160,0.03) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent);
+  pointer-events:none;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color:var(--accent);
+  background:rgba(0,200,160,0.06);
+  box-shadow:0 0 40px rgba(0,200,160,0.08), inset 0 0 40px rgba(0,200,160,0.03);
+}
+.upload-zone.drag-over { transform:scale(1.005); }
+
+.upload-icon-wrap {
+  width:80px; height:80px; border-radius:20px;
+  background:rgba(0,200,160,0.08);
+  border:1px solid rgba(0,200,160,0.2);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 20px;
+  font-size:2.2rem;
+  transition:all .3s;
+  position:relative; z-index:1;
+}
+.upload-zone:hover .upload-icon-wrap {
+  background:rgba(0,200,160,0.14);
+  transform:translateY(-4px);
+  box-shadow:0 12px 30px rgba(0,200,160,0.15);
+}
+.upload-title {
+  font-family:'Syne',sans-serif; font-weight:700;
+  font-size:1.25rem; margin-bottom:8px;
+  position:relative; z-index:1;
+}
+.upload-sub {
+  color:var(--muted); font-size:.85rem; margin-bottom:20px;
+  position:relative; z-index:1;
+}
+.upload-sub span { color:var(--accent); }
+.upload-types {
+  display:flex; gap:8px; justify-content:center; flex-wrap:wrap;
+  margin-bottom:22px; position:relative; z-index:1;
+}
+.type-pill {
+  padding:4px 12px; border-radius:100px;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border2);
+  font-size:.72rem; color:var(--muted); letter-spacing:.04em;
+}
+.upload-or {
+  color:var(--muted); font-size:.78rem; margin-bottom:14px;
+  display:flex; align-items:center; gap:12px;
+  position:relative; z-index:1;
+}
+.upload-or::before,.upload-or::after {
+  content:''; flex:1; height:1px; background:var(--border2);
+}
+.btn-upload-trigger {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); padding:11px 28px;
+  border-radius:10px; font-family:'DM Sans',sans-serif;
+  font-size:.875rem; font-weight:500; cursor:pointer;
+  transition:all .2s; position:relative; z-index:1;
+}
+.btn-upload-trigger:hover { border-color:var(--accent); color:var(--accent); }
+
+.upload-note {
+  font-size:.72rem; color:var(--muted); margin-top:14px;
+  position:relative; z-index:1;
+}
+.upload-note span { color:var(--accent); }
+
+/* ─── CATEGORY SELECTOR ─── */
+.category-row {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:10px; margin-bottom:28px;
+  animation:fadeUp .6s ease .2s both;
+}
+.cat-card {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:12px; padding:14px;
+  cursor:pointer; transition:all .2s; text-align:center;
+}
+.cat-card:hover { border-color:rgba(0,200,160,0.25); transform:translateY(-2px); }
+.cat-card.selected {
+  background:rgba(0,200,160,0.08); border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,200,160,0.08);
+}
+.cat-icon { font-size:1.5rem; margin-bottom:8px; display:block; }
+.cat-name { font-size:.75rem; font-weight:500; color:var(--text); }
+.cat-sub  { font-size:.65rem; color:var(--muted); margin-top:3px; }
+
+/* ─── QUEUE SECTION ─── */
+.queue-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:14px;
+  animation:fadeUp .6s ease .3s both;
+}
+.queue-title {
+  font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+  display:flex; align-items:center; gap:8px;
+}
+.queue-count {
+  background:var(--accent); color:#050d14;
+  font-size:.65rem; font-weight:700;
+  padding:2px 8px; border-radius:100px;
+}
+
+/* FILE CARDS */
+.file-list { display:flex; flex-direction:column; gap:10px; }
+
+.file-card {
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:12px;
+  padding:16px 18px;
+  display:flex; align-items:center; gap:14px;
+  transition:all .25s;
+  animation:slideIn .4s ease both;
+  position:relative; overflow:hidden;
+}
+.file-card::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0;
+  width:3px; border-radius:3px 0 0 3px;
+  background:var(--file-color,var(--accent));
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.file-card:hover { border-color:rgba(0,200,160,0.2); box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+
+.file-thumb {
+  width:44px; height:44px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem; flex-shrink:0;
+  background:rgba(255,255,255,0.04);
+}
+.file-info { flex:1; min-width:0; }
+.file-name {
+  font-weight:500; font-size:.875rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-bottom:3px;
+}
+.file-meta {
+  display:flex; align-items:center; gap:10px;
+  font-size:.72rem; color:var(--muted);
+}
+.file-tag {
+  padding:2px 8px; border-radius:100px;
+  font-size:.62rem; font-weight:600;
+  letter-spacing:.04em; text-transform:uppercase;
+}
+
+/* STATUS */
+.file-status { flex-shrink:0; text-align:right; min-width:110px; }
+.status-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px; border-radius:100px; font-size:.72rem; font-weight:500;
+}
+.status-badge.pending  { background:rgba(255,184,108,0.12); color:var(--accent4); border:1px solid rgba(255,184,108,0.2); }
+.status-badge.uploading{ background:rgba(0,144,255,0.12);   color:var(--accent2); border:1px solid rgba(0,144,255,0.2); }
+.status-badge.analysing{ background:rgba(0,200,160,0.1);    color:var(--accent);  border:1px solid var(--border); }
+.status-badge.done     { background:rgba(0,200,160,0.12);   color:var(--accent);  border:1px solid rgba(0,200,160,0.2); }
+.status-badge.error    { background:rgba(255,107,107,0.1);  color:var(--accent3); border:1px solid rgba(255,107,107,0.2); }
+
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.status-dot.blink { animation:blink .9s ease-in-out infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* PROGRESS BAR */
+.file-progress { margin-top:8px; }
+.prog-bar { height:3px; background:var(--border2); border-radius:2px; overflow:hidden; }
+.prog-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .4s ease;
+}
+
+/* FILE ACTIONS */
+.file-actions { display:flex; gap:6px; flex-shrink:0; }
+.icon-btn {
+  width:30px; height:30px; border-radius:7px;
+  background:var(--surface2); border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.8rem; cursor:pointer; color:var(--muted);
+  transition:all .2s;
+}
+.icon-btn:hover { border-color:var(--accent); color:var(--accent); }
+.icon-btn.del:hover { border-color:var(--accent3); color:var(--accent3); }
+
+/* ─── UPLOAD BUTTON MAIN ─── */
+.upload-action-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:18px 22px;
+  margin-top:24px;
+  animation:fadeUp .6s ease .4s both;
+}
+.action-info { font-size:.82rem; color:var(--muted); }
+.action-info strong { color:var(--text); font-weight:500; }
+.action-btns { display:flex; gap:10px; }
+
+.btn-analyse {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 28px; border-radius:10px;
+  background:var(--accent); color:#050d14;
+  font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem;
+  cursor:pointer; border:none; transition:all .25s;
+  position:relative; overflow:hidden;
+}
+.btn-analyse::before {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(135deg,transparent,rgba(255,255,255,0.12),transparent);
+  transform:translateX(-100%); transition:transform .5s;
+}
+.btn-analyse:hover::before { transform:translateX(100%); }
+.btn-analyse:hover { background:#00e8ba; box-shadow:0 0 24px rgba(0,200,160,0.4); transform:translateY(-1px); }
+.btn-analyse.loading { pointer-events:none; opacity:.8; }
+
+/* ─── RECENT REPORTS ─── */
+.section-title-row {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px; margin-top:36px;
+  animation:fadeUp .6s ease .5s both;
+}
+.section-ttl {
+  font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+}
+.view-all { font-size:.78rem; color:var(--accent); text-decoration:none; transition:opacity .2s; }
+.view-all:hover { opacity:.7; }
+
+/* FILTER TABS */
+.filter-tabs {
+  display:flex; gap:6px; margin-bottom:16px;
+  animation:fadeUp .6s ease .55s both;
+}
+.ftab {
+  padding:6px 14px; border-radius:100px;
+  background:transparent; border:1px solid var(--border2);
+  font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--muted);
+  cursor:pointer; transition:all .2s;
+}
+.ftab.active { background:rgba(0,200,160,0.1); border-color:var(--accent); color:var(--accent); }
+.ftab:hover:not(.active) { color:var(--text); border-color:var(--border); }
+
+/* REPORT GRID */
+.report-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:14px;
+  animation:fadeUp .6s ease .6s both;
+}
+.report-card {
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:14px; overflow:hidden;
+  transition:all .25s; cursor:pointer;
+}
+.report-card:hover { border-color:rgba(0,200,160,0.25); transform:translateY(-3px); box-shadow:0 14px 40px rgba(0,0,0,0.3); }
+
+.rc-header {
+  padding:16px 16px 12px;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  border-bottom:1px solid var(--border2);
+}
+.rc-icon {
+  width:40px; height:40px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem;
+}
+.rc-badge {
+  font-size:.6rem; font-weight:700; letter-spacing:.06em;
+  padding:3px 8px; border-radius:100px; text-transform:uppercase;
+}
+.rc-body { padding:14px 16px; }
+.rc-name {
+  font-weight:500; font-size:.875rem; margin-bottom:5px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.rc-date { font-size:.72rem; color:var(--muted); margin-bottom:10px; }
+.rc-tags { display:flex; gap:5px; flex-wrap:wrap; }
+.rc-tag {
+  padding:2px 8px; border-radius:100px;
+  font-size:.62rem; background:rgba(255,255,255,0.05);
+  border:1px solid var(--border2); color:var(--muted);
+}
+.rc-footer {
+  padding:10px 16px;
+  border-top:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.72rem; color:var(--muted);
+}
+.rc-ai-badge {
+  display:flex; align-items:center; gap:4px;
+  color:var(--accent); font-size:.7rem;
+}
+
+/* ─── AI ANALYSIS TOAST ─── */
+.toast-container {
+  position:fixed; bottom:24px; right:24px; z-index:500;
+  display:flex; flex-direction:column; gap:10px; align-items:flex-end;
+}
+.toast {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px; padding:14px 18px;
+  display:flex; align-items:flex-start; gap:12px;
+  min-width:280px; max-width:340px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.4);
+  animation:toastIn .35s cubic-bezier(.17,.67,.42,1.1) both;
+  position:relative;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+.toast.hide { animation:toastOut .3s ease forwards; }
+@keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.97)}}
+.toast-icon { font-size:1.3rem; flex-shrink:0; }
+.toast-body { flex:1; }
+.toast-title { font-weight:500; font-size:.82rem; margin-bottom:3px; }
+.toast-msg { font-size:.75rem; color:var(--muted); line-height:1.4; }
+.toast-close {
+  background:none; border:none; color:var(--muted);
+  cursor:pointer; font-size:.9rem; padding:0; transition:color .2s;
+  flex-shrink:0;
+}
+.toast-close:hover { color:var(--text); }
+
+/* ─── ANALYSIS MODAL ─── */
+.modal-overlay {
+  position:fixed; inset:0; z-index:400;
+  background:rgba(5,13,20,0.85); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  width:100%; max-width:560px;
+  padding:32px;
+  transform:translateY(20px) scale(.97);
+  transition:transform .3s cubic-bezier(.17,.67,.42,1.1);
+  position:relative;
+  max-height:85vh; overflow-y:auto;
+}
+.modal-overlay.show .modal { transform:none; }
+.modal-close {
+  position:absolute; top:18px; right:18px;
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:8px; padding:6px 10px;
+  color:var(--muted); cursor:pointer; font-size:.8rem;
+  transition:all .2s;
+}
+.modal-close:hover { border-color:var(--accent3); color:var(--accent3); }
+.modal-icon {
+  width:60px; height:60px; border-radius:16px;
+  background:rgba(0,200,160,0.1); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.8rem; margin-bottom:18px;
+}
+.modal-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.3rem; margin-bottom:6px; }
+.modal-sub { font-size:.82rem; color:var(--muted); margin-bottom:24px; line-height:1.5; }
+.modal-section { margin-bottom:20px; }
+.modal-section-title {
+  font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:10px; display:flex; align-items:center; gap:6px;
+}
+.modal-section-title::after { content:''; flex:1; height:1px; background:var(--border2); }
+.finding-list { display:flex; flex-direction:column; gap:8px; }
+.finding-item {
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--surface2); border:1px solid var(--border2);
+  border-radius:10px; padding:12px 14px;
+}
+.finding-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px;
+}
+.finding-text { font-size:.82rem; line-height:1.5; }
+.finding-text strong { font-weight:500; display:block; margin-bottom:2px; }
+.finding-text span { color:var(--muted); font-size:.75rem; }
+.modal-footer {
+  display:flex; gap:10px; margin-top:24px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .sidebar { display:none; }
+  .main { padding:20px; }
+  .report-grid { grid-template-columns:1fr 1fr; }
+}
+@media(max-width:580px){
+  .category-row { grid-template-columns:repeat(3,1fr); }
+  .report-grid { grid-template-columns:1fr; }
+  .upload-action-bar { flex-direction:column; gap:14px; }
+  .page-header { flex-direction:column; gap:14px; }
+}
+
+/* ─── PULSE RING ─── */
+@keyframes ring {
+  0%   { box-shadow:0 0 0 0 rgba(0,200,160,0.4); }
+  70%  { box-shadow:0 0 0 10px rgba(0,200,160,0); }
+  100% { box-shadow:0 0 0 0 rgba(0,200,160,0); }
+}
+.pulse-ring { animation:ring 1.5s ease-out infinite; }
+
+/* SPIN */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin { animation:spin .7s linear infinite; display:inline-block; }
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-dot"></div>
+      MediScan<span style="color:var(--accent)">AI</span>
+    </a>
+    <div class="nav-breadcrumb">
+      <a href="#">Dashboard</a>
+      <span>›</span>
+      <strong>Upload Reports</strong>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-notif">🔔<div class="notif-badge"></div></div>
+    <div class="nav-avatar">RS</div>
+  </div>
+</nav>
+
+<!-- ─── LAYOUT ─── -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Main</div>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">📊</span> Dashboard</a>
+      <a href="#" class="sidebar-item active"><span class="sidebar-icon">📁</span> Upload Reports</a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🧬</span> My Reports<span class="sidebar-badge green">12</span></a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">💊</span> Medicines</a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Health</div>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🤖</span> AI Chatbot</a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🗺️</span> Heatmap</a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🔔</span> Reminders<span class="sidebar-badge">3</span></a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🏛️</span> Gov. Schemes</a>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">⚙️</span> Settings</a>
+      <a href="#" class="sidebar-item"><span class="sidebar-icon">🚪</span> Sign Out</a>
+    </div>
+    <div class="storage-widget">
+      <div class="storage-label">Cloud Storage</div>
+      <div class="storage-bar-bg"><div class="storage-bar-fill"></div></div>
+      <div class="storage-info"><span>340 MB used</span><span>1 GB free</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-title-group">
+        <div class="page-eyebrow">📁 Report Upload</div>
+        <h1 class="page-title">Upload Medical Reports</h1>
+        <p class="page-sub">Upload any medical document and let AI analyse it for you.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" onclick="showModal('history')">📋 Upload History</button>
+      </div>
+    </div>
+
+    <!-- REPORT CATEGORY -->
+    <div style="margin-bottom:10px;font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);animation:fadeUp .5s ease .15s both">
+      Select Report Category
+    </div>
+    <div class="category-row" id="catRow">
+      <div class="cat-card selected" onclick="selectCat(this)">
+        <span class="cat-icon">🩸</span>
+        <div class="cat-name">Blood Test</div>
+        <div class="cat-sub">CBC, Sugar, Lipids</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">🫁</span>
+        <div class="cat-name">Radiology</div>
+        <div class="cat-sub">X-Ray, MRI, CT</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">💊</span>
+        <div class="cat-name">Prescription</div>
+        <div class="cat-sub">Doctor's Rx</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">🫀</span>
+        <div class="cat-name">Cardiology</div>
+        <div class="cat-sub">ECG, Echo</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">🧠</span>
+        <div class="cat-name">Neurology</div>
+        <div class="cat-sub">EEG, MRI Brain</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">🦠</span>
+        <div class="cat-name">Pathology</div>
+        <div class="cat-sub">Biopsy, Smear</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">👁️</span>
+        <div class="cat-name">Ophthalmology</div>
+        <div class="cat-sub">Eye Reports</div>
+      </div>
+      <div class="cat-card" onclick="selectCat(this)">
+        <span class="cat-icon">📄</span>
+        <div class="cat-name">Other</div>
+        <div class="cat-sub">Any Document</div>
+      </div>
+    </div>
+
+    <!-- DRAG & DROP ZONE -->
+    <div class="upload-zone" id="dropZone"
+         ondragover="onDragOver(event)"
+         ondragleave="onDragLeave(event)"
+         ondrop="onDrop(event)"
+         onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon-wrap">☁️</div>
+      <div class="upload-title">Drag & Drop your reports here</div>
+      <div class="upload-sub">Supports <span>PDF, JPG, PNG, DICOM, DOCX</span> files — up to 25 MB each</div>
+      <div class="upload-types">
+        <span class="type-pill">📄 PDF</span>
+        <span class="type-pill">🖼️ JPG / PNG</span>
+        <span class="type-pill">🏥 DICOM</span>
+        <span class="type-pill">📝 DOCX</span>
+        <span class="type-pill">📊 XLSX</span>
+      </div>
+      <div class="upload-or">or</div>
+      <button class="btn-upload-trigger" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
+        📂 Browse Files
+      </button>
+      <div class="upload-note">🔒 All files are <span>AES-256 encrypted</span> before upload. Only you can access them.</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png,.dcm,.docx,.xlsx" style="display:none" onchange="onFilePick(event)"/>
+
+    <!-- UPLOAD QUEUE -->
+    <div id="queueSection" style="display:none">
+      <div class="queue-header">
+        <div class="queue-title">
+          Upload Queue
+          <span class="queue-count" id="queueCount">0</span>
+        </div>
+        <button class="btn btn-ghost" onclick="clearQueue()" style="padding:6px 14px;font-size:.75rem;">✕ Clear All</button>
+      </div>
+      <div class="file-list" id="fileList"></div>
+
+      <div class="upload-action-bar">
+        <div class="action-info">
+          <strong id="readyCount">0 files</strong> ready to upload · AI analysis will start automatically
+        </div>
+        <div class="action-btns">
+          <button class="btn btn-ghost" onclick="clearQueue()">Cancel</button>
+          <button class="btn-analyse" id="analyseBtn" onclick="startUpload()">
+            🧬 <span id="analyseText">Upload & Analyse</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT REPORTS -->
+    <div class="section-title-row">
+      <div class="section-ttl">Recently Analysed Reports</div>
+      <a href="#" class="view-all">View All →</a>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="filterReports('all',this)">All</button>
+      <button class="ftab" onclick="filterReports('blood',this)">Blood</button>
+      <button class="ftab" onclick="filterReports('radiology',this)">Radiology</button>
+      <button class="ftab" onclick="filterReports('prescription',this)">Prescription</button>
+      <button class="ftab" onclick="filterReports('other',this)">Other</button>
+    </div>
+
+    <div class="report-grid" id="reportGrid">
+      <!-- injected by JS -->
+    </div>
+
+  </main>
+</div>
+
+<!-- ─── TOAST CONTAINER ─── -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ─── ANALYSIS MODAL ─── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+/* ───────────────────────────────
+   DATA
+─────────────────────────────── */
+const REPORTS = [
+  {
+    id:1, name:'CBC_Report_March2025.pdf', type:'blood',
+    icon:'🩸', iconBg:'rgba(255,107,107,0.1)', badgeColor:'rgba(255,107,107,0.12)', badgeTxt:'#ff6b6b',
+    date:'15 Mar 2025', size:'1.2 MB',
+    tags:['Haemoglobin','WBC','Platelets'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#ff6b6b', title:'Low Haemoglobin', desc:'10.2 g/dL — Below normal range (12–17). May indicate anaemia.'},
+      {color:'#00c8a0', title:'WBC Normal', desc:'7,400 cells/µL — Within healthy range.'},
+      {color:'#ffb86c', title:'Platelet Count Borderline', desc:'1.45 lakh — Slightly low. Monitor.'},
+    ]
+  },
+  {
+    id:2, name:'Chest_XRay_Feb2025.jpg', type:'radiology',
+    icon:'🫁', iconBg:'rgba(0,144,255,0.1)', badgeColor:'rgba(0,144,255,0.12)', badgeTxt:'#0090ff',
+    date:'3 Feb 2025', size:'3.8 MB',
+    tags:['Chest','Lungs','Ribs'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#00c8a0', title:'Lungs Clear', desc:'No opacification or consolidation detected.'},
+      {color:'#00c8a0', title:'Heart Size Normal', desc:'Cardiothoracic ratio within normal limits.'},
+      {color:'#ffb86c', title:'Mild Scoliosis', desc:'Slight spinal curvature noted — consult orthopaedic.'},
+    ]
+  },
+  {
+    id:3, name:'Dr_Mehta_Prescription.pdf', type:'prescription',
+    icon:'💊', iconBg:'rgba(0,200,160,0.1)', badgeColor:'rgba(0,200,160,0.12)', badgeTxt:'#00c8a0',
+    date:'20 Jan 2025', size:'0.4 MB',
+    tags:['Metformin','Amlodipine','Vitamin D'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#00c8a0', title:'Metformin 500mg', desc:'Twice daily after meals. For Type 2 Diabetes.'},
+      {color:'#0090ff', title:'Amlodipine 5mg', desc:'Once daily at night. For hypertension management.'},
+      {color:'#ffb86c', title:'Vitamin D3 60K', desc:'Once a week for 8 weeks. Deficiency noted.'},
+    ]
+  },
+  {
+    id:4, name:'Lipid_Profile_Dec2024.pdf', type:'blood',
+    icon:'🧪', iconBg:'rgba(255,184,108,0.1)', badgeColor:'rgba(255,184,108,0.12)', badgeTxt:'#ffb86c',
+    date:'8 Dec 2024', size:'0.8 MB',
+    tags:['Cholesterol','LDL','Triglycerides'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#ff6b6b', title:'High LDL Cholesterol', desc:'148 mg/dL — Elevated. Dietary changes recommended.'},
+      {color:'#ffb86c', title:'Borderline Triglycerides', desc:'165 mg/dL — Borderline high. Reduce sugar intake.'},
+      {color:'#00c8a0', title:'HDL Normal', desc:'52 mg/dL — Good cholesterol within healthy range.'},
+    ]
+  },
+  {
+    id:5, name:'Brain_MRI_Nov2024.pdf', type:'radiology',
+    icon:'🧠', iconBg:'rgba(160,100,255,0.1)', badgeColor:'rgba(160,100,255,0.12)', badgeTxt:'#a064ff',
+    date:'12 Nov 2024', size:'15.2 MB',
+    tags:['MRI','Brain','Neurological'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#00c8a0', title:'No Mass Lesion', desc:'No evidence of tumour or space-occupying lesion detected.'},
+      {color:'#00c8a0', title:'Ventricles Normal', desc:'Cerebral ventricles appear normal in size.'},
+      {color:'#ffb86c', title:'Minor White Matter Changes', desc:'Mild age-related periventricular changes. Not concerning.'},
+    ]
+  },
+  {
+    id:6, name:'ECG_Report_Oct2024.pdf', type:'other',
+    icon:'🫀', iconBg:'rgba(255,107,107,0.1)', badgeColor:'rgba(255,107,107,0.12)', badgeTxt:'#ff6b6b',
+    date:'29 Oct 2024', size:'0.6 MB',
+    tags:['ECG','Heart Rate','Rhythm'],
+    aiStatus:'done', aiLabel:'Analysed',
+    findings:[
+      {color:'#00c8a0', title:'Normal Sinus Rhythm', desc:'Heart rate 72 bpm — Regular sinus rhythm detected.'},
+      {color:'#00c8a0', title:'PR Interval Normal', desc:'0.16 sec — Within normal range.'},
+      {color:'#00c8a0', title:'No ST Changes', desc:'No ST elevation or depression. Low cardiac risk.'},
+    ]
+  },
+];
+
+/* ───────────────────────────────
+   RENDER REPORTS
+─────────────────────────────── */
+function renderReports(filter='all') {
+  const grid = document.getElementById('reportGrid');
+  const list = filter==='all' ? REPORTS : REPORTS.filter(r=>r.type===filter);
+  grid.innerHTML = list.map(r=>`
+    <div class="report-card" onclick="showReportModal(${r.id})">
+      <div class="rc-header">
+        <div class="rc-icon" style="background:${r.iconBg}">${r.icon}</div>
+        <span class="rc-badge" style="background:${r.badgeColor};color:${r.badgeTxt}">${r.aiLabel}</span>
+      </div>
+      <div class="rc-body">
+        <div class="rc-name">${r.name}</div>
+        <div class="rc-date">📅 ${r.date} · ${r.size}</div>
+        <div class="rc-tags">${r.tags.map(t=>`<span class="rc-tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="rc-footer">
+        <span>View Analysis</span>
+        <span class="rc-ai-badge">🤖 AI Report →</span>
+      </div>
+    </div>
+  `).join('');
+}
+renderReports();
+
+function filterReports(type, btn) {
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReports(type);
+}
+
+/* ───────────────────────────────
+   CATEGORY SELECT
+─────────────────────────────── */
+function selectCat(el) {
+  document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+/* ───────────────────────────────
+   DRAG & DROP
+─────────────────────────────── */
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+function onDragLeave(e) {
+  document.getElementById('dropZone').classList.remove('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  addFiles([...e.dataTransfer.files]);
+}
+function onFilePick(e) {
+  addFiles([...e.target.files]);
+  e.target.value = '';
+}
+
+/* ───────────────────────────────
+   FILE QUEUE
+─────────────────────────────── */
+let queue = [];
+const EXT_ICONS = { pdf:'📄', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', dcm:'🏥', docx:'📝', xlsx:'📊' };
+const EXT_COLORS = { pdf:'#ff6b6b', jpg:'#0090ff', jpeg:'#0090ff', png:'#0090ff', dcm:'#a064ff', docx:'#00c8a0', xlsx:'#00c8a0' };
+
+function addFiles(files) {
+  files.forEach(f => {
+    if(f.size > 25*1024*1024) { showToast('⚠️','File Too Large',`${f.name} exceeds 25 MB limit.`,'warn'); return; }
+    if(queue.find(q=>q.name===f.name && q.size===f.size)) return;
+    queue.push({ id:Date.now()+Math.random(), file:f, name:f.name, size:f.size, progress:0, status:'pending' });
+  });
+  renderQueue();
+  if(files.length) showToast('📁','Files Added',`${files.length} file(s) added to upload queue.`,'info');
+}
+
+function renderQueue() {
+  const section = document.getElementById('queueSection');
+  const list    = document.getElementById('fileList');
+  const count   = document.getElementById('queueCount');
+  const ready   = document.getElementById('readyCount');
+
+  if(!queue.length) { section.style.display='none'; return; }
+  section.style.display='block';
+  count.textContent = queue.length;
+  ready.textContent = `${queue.length} file${queue.length>1?'s':''}`;
+
+  list.innerHTML = queue.map((f,i) => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    const icon = EXT_ICONS[ext] || '📄';
+    const color = EXT_COLORS[ext] || '#00c8a0';
+    const sizeFmt = f.size < 1024*1024 ? (f.size/1024).toFixed(0)+' KB' : (f.size/1024/1024).toFixed(1)+' MB';
+    const statusHtml = getStatusHtml(f.status);
+    const progressHtml = ['uploading','analysing'].includes(f.status) ? `
+      <div class="file-progress">
+        <div class="prog-bar"><div class="prog-fill" id="prog-${f.id}" style="width:${f.progress}%"></div></div>
+      </div>` : '';
+    return `
+      <div class="file-card" style="--file-color:${color}" id="fc-${f.id}">
+        <div class="file-thumb">${icon}</div>
+        <div class="file-info">
+          <div class="file-name">${f.name}</div>
+          <div class="file-meta">
+            <span>${sizeFmt}</span>
+            <span style="color:${color};font-weight:500">.${ext.toUpperCase()}</span>
+          </div>
+          ${progressHtml}
+        </div>
+        <div class="file-status">${statusHtml}</div>
+        <div class="file-actions">
+          ${f.status==='done' ? `<div class="icon-btn" title="View Analysis" onclick="showToast('🧬','AI Analysis','Report analysed successfully!','success')">🧬</div>` : ''}
+          <div class="icon-btn del" title="Remove" onclick="removeFile('${f.id}')">✕</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function getStatusHtml(status) {
+  const map = {
+    pending:   `<span class="status-badge pending"><span class="status-dot"></span>Pending</span>`,
+    uploading: `<span class="status-badge uploading"><span class="status-dot blink"></span>Uploading…</span>`,
+    analysing: `<span class="status-badge analysing"><span class="status-dot blink"></span>Analysing…</span>`,
+    done:      `<span class="status-badge done"><span class="status-dot"></span>Complete</span>`,
+    error:     `<span class="status-badge error"><span class="status-dot"></span>Failed</span>`,
+  };
+  return map[status] || map.pending;
+}
+
+function removeFile(id) {
+  queue = queue.filter(f=>f.id != id);
+  renderQueue();
+}
+function clearQueue() {
+  queue = [];
+  renderQueue();
+}
+
+/* ───────────────────────────────
+   FAKE UPLOAD + ANALYSIS
+─────────────────────────────── */
+let uploading = false;
+
+function startUpload() {
+  if(uploading || !queue.length) return;
+  uploading = true;
+
+  const btn = document.getElementById('analyseBtn');
+  btn.classList.add('loading');
+  document.getElementById('analyseText').innerHTML = `<span class="spin">⏳</span> Processing…`;
+
+  let i = 0;
+  function processNext() {
+    if(i >= queue.length) {
+      btn.classList.remove('loading');
+      document.getElementById('analyseText').textContent = 'Upload & Analyse';
+      uploading = false;
+      showToast('✅','All Done!',`${queue.length} report(s) analysed by AI. Check below.`,'success');
+      queue.forEach(f=>f.status='done');
+      renderQueue();
+      return;
+    }
+    const f = queue[i];
+    f.status = 'uploading'; f.progress = 0;
+    renderQueue();
+    showToast('☁️','Uploading',`Uploading ${f.name}…`,'info');
+
+    // Simulate upload progress
+    let prog = 0;
+    const upInterval = setInterval(()=>{
+      prog += Math.random()*18 + 8;
+      if(prog >= 100) { prog = 100; clearInterval(upInterval); }
+      f.progress = Math.round(prog);
+      const bar = document.getElementById(`prog-${f.id}`);
+      if(bar) bar.style.width = f.progress + '%';
+      if(prog >= 100) {
+        f.status = 'analysing'; f.progress = 0;
+        renderQueue();
+        showToast('🧬','AI Analysing',`Running AI analysis on ${f.name}…`,'info');
+        // Simulate analysis
+        let ap = 0;
+        const aiInterval = setInterval(()=>{
+          ap += Math.random()*12 + 6;
+          if(ap >= 100) { ap = 100; clearInterval(aiInterval); }
+          f.progress = Math.round(ap);
+          const abar = document.getElementById(`prog-${f.id}`);
+          if(abar) abar.style.width = f.progress + '%';
+          if(ap >= 100) {
+            f.status = 'done';
+            renderQueue();
+            i++; processNext();
+          }
+        }, 120);
+      }
+    }, 80);
+  }
+  processNext();
+}
+
+/* ───────────────────────────────
+   TOAST
+─────────────────────────────── */
+const TOAST_ICONS = { info:'ℹ️', success:'✅', warn:'⚠️', error:'❌' };
+
+function showToast(icon, title, msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const id = 'toast-'+Date.now();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.id = id;
+  el.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-body">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>
+    <button class="toast-close" onclick="dismissToast('${id}')">✕</button>`;
+  c.appendChild(el);
+  setTimeout(()=>dismissToast(id), 4000);
+}
+
+function dismissToast(id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('hide');
+  setTimeout(()=>el.remove(), 300);
+}
+
+/* ───────────────────────────────
+   MODALS
+─────────────────────────────── */
+function showReportModal(id) {
+  const r = REPORTS.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-icon" style="background:${r.iconBg}">${r.icon}</div>
+    <div class="modal-title">${r.name}</div>
+    <div class="modal-sub">
+      Uploaded ${r.date} · ${r.size} · Category: <strong style="color:var(--accent)">${r.tags[0]}</strong>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">🤖 AI Findings</div>
+      <div class="finding-list">
+        ${r.findings.map(f=>`
+          <div class="finding-item">
+            <div class="finding-dot" style="background:${f.color}"></div>
+            <div class="finding-text">
+              <strong>${f.title}</strong>
+              <span>${f.desc}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" style="flex:1" onclick="showToast('📥','Download','Downloading full AI report…','info');closeModal()">📥 Download Report</button>
+      <button class="btn btn-primary" style="flex:1" onclick="showToast('💬','Chatbot','Opening AI chatbot with this report…','success');closeModal()">💬 Ask AI About This</button>
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if(e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+/* ───────────────────────────────
+   KEYBOARD
+─────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') document.getElementById('modalOverlay').classList.remove('show');
+});
+</script>
+</body>
+</html>
